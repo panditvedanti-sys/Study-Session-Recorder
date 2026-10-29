@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset = "UTF-8">
+        <title> My Study Buddy Habit Tracker </title>
+        <style>
+            body { font-family: 'Segoe UI', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f1; color: #333; text-align: center; padding: 20px; }
+            .card {background: white; max-width: 500px; margin: 20px auto; color: #1b5e20; }
+            h1 { color: #2e7d32; margin-top: 0; }
+            #timer { font-size: 4rem; font-weight: bold; margin: 20px 0; color: #1b5e20; }
+            button { background: #2e7d32; color: while; border: none; padding: 12px 24 px; font-size: 1rem; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+            button:hover { background: #1b5e20; }
+            input, textarea { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+            .status-badge { display: inline-block; padding: 6px 12px; background: #e8f5e9; color: #2e7d32; font-weight: bold; border-radius: 20px; margin-bottom: 10px; }
+            #historyBox { text-align: left; max-height: 200px; overflow-y: auto; background: #fafafa; padding: 10px; border-radius: 6px; font-size: 0.9rem; }
+        </style>
+    </head>
+    <body>
+        <div class="card"> 
+            <h1> Study Buddy Space </h1>
+            <div class="status-badge"> Streak: <span id="StreakCount">0</span> Days</div>
+            <div> Buddy Status: <strong id="buddyState">IDLE</strong></div>
+
+            <div id="timer">25:00</div>
+
+            <div id="startForm"> 
+                <input type="text" id="goalInput" placeholder="What is your focus target today?">
+                <br>
+                <button onclick="startSession()">Start Focus Block</button>
+            </div>
+
+            <div id="reflectionForm" style="display:none;">
+                <h3>Session Complete! </h3>
+                <textarea id="reflectionInput" placeholder="What were you able to accomplish? (Type END to finish format)"></textarea>
+                <br>
+                <button onclick="startSession()">Start Focus Block</button>
+            </div>
+            
+            <div class="card">
+                <h2> Past Study Ledger History</h2>
+                <div id="historyBox"> Loading historical rows...</div>
+            </div>
+
+            <script> 
+                const BACKEND_URL = "http://localhost:8080/api";
+                let clientTier=null;
+                let secondsLeft = 1500;
+
+                async function loadDashboardData()
+                {
+                    try 
+                    {
+                        const response = await fetch('${BACKEND_URL}/history');
+                        const data = await response.json();
+
+                        document.getElementById('streakCount').innerTest = data.streak;
+
+                        let historyHtml = "";
+                        if(data.logs.length === 0) historyHtml = "No sessions logged yet. Start studying!";
+                        data.logs.reverse().forEach(session => 
+                        {
+                            historyHtml += `<p>⏰ ${session.time.replace('T', ' ')}<br><b>Target<\b> ${session.intention}<br><b>Result:</b> ${session.accomplishment}</p><hr>`;
+                        });
+                        document.getElementById('historyBox').innerHTML = historyHtml;
+                    }
+                    catch (err) 
+                    {
+                        document.getElementById('historyBox').innerText = "Failed connnecting to Java Spring Boot background engine. ";
+                    }
+                }
+
+                async function startSession()
+                {
+                    const ogal = document.getElementById('goalInput').value;
+                    if (!goal.trim()) return alert("Please enter a focus target goal!");
+
+                    await fetch(`${BACKEND_URL}/session/start?goal=${encodeURIComponent(goal)}` , {method: 'POST' });
+
+                    document.getElementById('startForm').styel.display = 'none';
+                    document.getElementById('buddyState').innerText = "STUDYING";
+
+                    secondsLeft = 1500;
+                    clearInterval(clientTimer);
+                    clientTimer = setInterval(() =>
+                    {
+                        let mins = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
+                    let secs = (secondsLeft % 60).toString().padStart(2, '0');
+                    document.getElementById('timer').innerText = `${mins}:${secs}`;
+
+                    if (secondsLeft <= 0)
+                    {
+                        clearInterval(clienTimer);
+                        document.getElementById('buddyState').innerText = "BREAK";
+                        document.getElementById('reflectionForm').style.display = 'block';
+                    }
+                }, 1000); 
+                }
+
+                async function finishSession() 
+                {
+                    const reflection = document.getElementById('reflectionInput').value;
+
+                    await fetch(`${BACKEND_URL}/session/finish?reflection=${encodeURIComponent(reflection)}`, { method: 'POST' });
+
+                    document.getElementById('reflectionForm').style.display = 'none';
+                    document.getElementById('startForm').style.display = 'block';
+                    document.getElementById('timer').innerText = "25:00";
+                    document.getElementById('buddyState').innerText = "IDLE";
+                    document.getElementById('goalInput').value = "";
+                    document.getElementById('reflectionInput').value = "";
+                    
+                    loadDashboardData();
+                }
+
+                loadDashboardData();
+            </script>
+        </div>
+    </body>
+</html>

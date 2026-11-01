@@ -1,5 +1,3 @@
-package com.example.StudySessionRecorder;
-
 public class HabitEngine {
     private final CharacterConfig user;
     private int currentTimerSeconds;

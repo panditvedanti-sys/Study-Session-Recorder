@@ -1,4 +1,3 @@
-package com.example.StudySessionRecorder;
 
 public class CharacterConfig {
     private final String name;

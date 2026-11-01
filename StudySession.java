@@ -1,5 +1,3 @@
-package com.example.StudySessionRecorder;
-
 import java.time.LocalDateTime;
 
 public class StudySession {
@@ -15,7 +13,6 @@ public class StudySession {
         this.intention = intention;
         this.accomplishment = accomplishment;
         this.time = time;
-  
     }
 
     public String getIntention() {
